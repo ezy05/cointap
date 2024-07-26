@@ -12,7 +12,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-image: url('poza.png');
+            background-image: url('poza.png');  /* Imaginea de fundal */
             background-size: cover;
             background-position: center;
         }
@@ -22,28 +22,28 @@
             border-radius: 20px;
             padding: 50px;
             box-shadow: 0px 0px 25px rgba(0, 0, 0, 0.5);
-            width: 600px;
-            max-width: 90vw;
+            width: 600px;  /* Lățime mai mare pentru a acomoda imaginea mare */
+            max-width: 90vw; /* Asigură că containerul se adaptează la dimensiunea ecranului */
         }
         #coin {
-            width: 300px;
+            width: 300px;  /* Dimensiune mare pentru imaginea monedei */
             height: 300px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 20px;  /* Spațiu deasupra imaginii */
         }
         #balance {
-            font-size: 60px;
+            font-size: 60px;  /* Dimensiune mare pentru textul balanței */
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 20px;  /* Spațiu sub balanță pentru a crea separare de textul mic */
         }
         #tap-instruction {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 40px;
+            font-size: 20px;  /* Dimensiune mai mică pentru textul de instrucțiuni */
+            color: #333;  /* Culoare textului */
+            margin-bottom: 40px;  /* Spațiu sub textul mic pentru a crea separare de imaginea monedei */
         }
         #start-button, #withdraw-button, #earn-more-button {
             display: block;
-            margin: 10px auto;
+            margin: 10px auto;  /* Spațiu între butoane */
             padding: 15px 30px;
             font-size: 20px;
             font-weight: bold;
@@ -99,38 +99,17 @@
         #modal-content button:hover {
             background-color: #0056b3;
         }
-        #ad-modal {
+        #error-message, #success-message {
+            margin-top: 10px;
             display: none;
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
         }
-        #ad-content {
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
+        #error-message {
+            color: red;
         }
-        #close-ad {
-            padding: 10px 20px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #close-ad:hover {
-            background-color: #0056b3;
+        #success-message {
+            color: green;
         }
     </style>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3821323185009106" crossorigin="anonymous"></script>
 </head>
 <body>
     <div id="container">
@@ -147,15 +126,6 @@
         </div>
     </div>
 
-    <!-- Modal pentru reclama interstițială -->
-    <div id="ad-modal">
-        <div id="ad-content">
-            <h2>Special Offer!</h2>
-            <p>Check out this amazing offer just for you!</p>
-            <button id="close-ad">Close</button>
-        </div>
-    </div>
-
     <!-- Modal pentru retragere -->
     <div id="modal">
         <div id="modal-content">
@@ -165,13 +135,19 @@
             <button id="confirm-withdraw">Confirm</button>
             <button id="close-modal">Close</button>
             <div id="info" style="margin-top: 10px; color: #333;">10,000 = $1</div>
-            <div id="error-message" style="color: red; display: none;"></div>
-            <div id="success-message" style="color: green; display: none;"></div>
+            <div id="error-message">Error message here</div> <!-- Mesaj de eroare -->
+            <div id="success-message">Withdrawal successful!</div> <!-- Mesaj de succes -->
         </div>
     </div>
 
     <script>
-        let userBalance = 100;
+        // Setează balanța inițială la 100 dacă nu există o valoare salvată în localStorage
+        let userBalance = parseInt(localStorage.getItem('userBalance'), 10);
+        if (isNaN(userBalance)) {
+            userBalance = 100; // Balanță inițială
+            localStorage.setItem('userBalance', userBalance);
+        }
+
         const balanceElement = document.getElementById('balance');
         const welcomeScreen = document.getElementById('welcome-screen');
         const gameScreen = document.getElementById('game-screen');
@@ -187,21 +163,9 @@
         const infoElement = document.getElementById('info');
         const errorMessage = document.getElementById('error-message');
         const successMessage = document.getElementById('success-message');
-        const adModal = document.getElementById('ad-modal');
-        const closeAdButton = document.getElementById('close-ad');
 
-        // Inițializare balanță
-        function initializeBalance() {
-            const savedBalance = localStorage.getItem('userBalance');
-            if (savedBalance === null) {
-                localStorage.setItem('userBalance', 100);
-                userBalance = 100;
-            } else {
-                userBalance = parseInt(savedBalance, 10);
-            }
-            balanceElement.textContent = `Balance: ${userBalance}`;
-        }
-        initializeBalance();
+        // Actualizează balanța pe ecran
+        balanceElement.textContent = `Balance: ${userBalance}`;
 
         startButton.addEventListener('click', () => {
             welcomeScreen.style.display = 'none';
@@ -215,19 +179,19 @@
         });
 
         withdrawButton.addEventListener('click', () => {
-            if (userBalance < 10000) {
-                errorMessage.textContent = "Insufficient balance. You need at least 10,000 coins to withdraw.";
-                errorMessage.style.display = 'block';
+            if (userBalance < 100) {
+                alert("Your balance is too low to withdraw. You need at least 100 to withdraw.");
                 return;
             }
-            errorMessage.style.display = 'none';
             modal.style.display = 'flex';
+            errorMessage.style.display = 'none'; // Ascunde mesajul de eroare atunci când modalul se deschide
+            successMessage.style.display = 'none'; // Ascunde mesajul de succes atunci când modalul se deschide
         });
 
         closeModalButton.addEventListener('click', () => {
             modal.style.display = 'none';
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none'; // Ascunde mesajul de eroare când se închide modalul
+            successMessage.style.display = 'none'; // Ascunde mesajul de succes când se închide modalul
         });
 
         confirmWithdrawButton.addEventListener('click', () => {
@@ -237,12 +201,14 @@
             if (!email || isNaN(amount) || amount <= 0) {
                 errorMessage.textContent = "Please enter a valid email and amount.";
                 errorMessage.style.display = 'block';
+                successMessage.style.display = 'none'; // Ascunde mesajul de succes dacă este afișat
                 return;
             }
 
             if (amount > userBalance) {
                 errorMessage.textContent = "Insufficient balance.";
                 errorMessage.style.display = 'block';
+                successMessage.style.display = 'none'; // Ascunde mesajul de succes dacă este afișat
                 return;
             }
 
@@ -251,25 +217,16 @@
             balanceElement.textContent = `Balance: ${userBalance}`;
             successMessage.textContent = `Withdrawal successful! Sent $${amount / 10000} to ${email}`;
             successMessage.style.display = 'block';
-            modal.style.display = 'none';
+            errorMessage.style.display = 'none'; // Ascunde mesajul de eroare dacă este afișat
+            setTimeout(() => {
+                modal.style.display = 'none';
+                successMessage.style.display = 'none'; // Ascunde mesajul de succes după închiderea modalului
+            }, 3000); // Ascunde mesajul după 3 secunde
         });
 
         earnMoreButton.addEventListener('click', () => {
             alert("Earn More feature not implemented yet.");
         });
-
-        // Funcție pentru a afișa reclama interstițială
-        function showInterstitialAd() {
-            adModal.style.display = 'flex';
-        }
-
-        // Funcție pentru a închide reclama
-        closeAdButton.addEventListener('click', () => {
-            adModal.style.display = 'none';
-        });
-
-        // Afișează reclama la fiecare minut
-        setInterval(showInterstitialAd, 60000); // 60000 ms = 1 minut
     </script>
 </body>
 </html>
